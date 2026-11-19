@@ -52,12 +52,12 @@ export function AssetForm({ draft, editing, saving, picking, onChange, onPickTog
     const latitude = readCoordinate(draft.latitude, latitudeLimit)
     const longitude = readCoordinate(draft.longitude, 180)
     const next: FieldErrors = {}
-    if (!name || Array.from(name).length > 80) next.name = 'Masukkan nama antara 1 dan 80 karakter.'
-    else if (/\p{Cc}/u.test(name)) next.name = 'Hapus karakter kontrol dari nama aset.'
-    if (!Object.hasOwn(assetTypes, draft.type)) next.type = 'Pilih jenis aset yang tersedia.'
-    if (!Object.hasOwn(assetStatuses, draft.status)) next.status = 'Pilih status yang tersedia.'
-    if (latitude === undefined) next.latitude = 'Masukkan lintang antara −85,05112878 dan 85,05112878.'
-    if (longitude === undefined) next.longitude = 'Masukkan bujur antara −180 dan 180.'
+    if (!name || Array.from(name).length > 80) next.name = 'Enter an asset name between 1 and 80 characters.'
+    else if (/\p{Cc}/u.test(name)) next.name = 'Remove line breaks or other control characters from the asset name.'
+    if (!Object.hasOwn(assetTypes, draft.type)) next.type = 'Select an asset type from the list.'
+    if (!Object.hasOwn(assetStatuses, draft.status)) next.status = 'Select a status from the list.'
+    if (latitude === undefined) next.latitude = 'Enter a latitude between −85.05112878 and 85.05112878.'
+    if (longitude === undefined) next.longitude = 'Enter a longitude between −180 and 180.'
     setSaveError('')
 
     if (Object.keys(next).length || latitude === undefined || longitude === undefined) {
@@ -70,7 +70,7 @@ export function AssetForm({ draft, editing, saving, picking, onChange, onPickTog
       await onSave({ name, type: draft.type, status: draft.status, latitude, longitude })
     } catch (error) {
       if (error instanceof ApiError && error.fields) showErrors(error.fields)
-      else setSaveError(error instanceof Error ? error.message : 'Aset gagal disimpan. Coba lagi.')
+      else setSaveError(error instanceof Error ? error.message : 'Could not save the asset. Try again.')
     }
   }
 
@@ -83,22 +83,22 @@ export function AssetForm({ draft, editing, saving, picking, onChange, onPickTog
     <>
       <div className="panel-heading panel-heading--stack">
         <button type="button" className="text-button" onClick={onCancel} disabled={saving}>
-          <ChevronLeft size={17} aria-hidden="true" /> {editing ? 'Detail aset' : 'Daftar aset'}
+          <ChevronLeft size={17} aria-hidden="true" /> {editing ? 'Asset details' : 'All assets'}
         </button>
-        <h2 tabIndex={-1}>{editing ? 'Edit aset' : 'Tambah aset'}</h2>
+        <h2 tabIndex={-1}>{editing ? 'Edit asset' : 'Add asset'}</h2>
       </div>
       <form className="asset-form panel-body" noValidate onSubmit={submit}>
         <fieldset disabled={saving}>
           <div className="form-field">
-            <label htmlFor={fieldID('name')}>Nama aset</label>
+            <label htmlFor={fieldID('name')}>Asset name</label>
             <input {...fieldProps('name')} autoComplete="off" required
-              placeholder="Contoh: Sensor Braga" value={draft.name} onChange={(event) => update('name', event.target.value)} />
+              placeholder="e.g. Braga Sensor" value={draft.name} onChange={(event) => update('name', event.target.value)} />
             {errorMessage('name')}
           </div>
 
           <div className="field-grid">
             <div className="form-field">
-              <label htmlFor={fieldID('type')}>Jenis</label>
+              <label htmlFor={fieldID('type')}>Type</label>
               <select {...fieldProps('type')} value={draft.type}
                 onChange={(event) => update('type', event.target.value as Draft['type'])}>
                 {Object.entries(assetTypes).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
@@ -116,23 +116,23 @@ export function AssetForm({ draft, editing, saving, picking, onChange, onPickTog
           </div>
 
           <div className="location-fields">
-            <h3>Lokasi</h3>
+            <h3>Location</h3>
             <button type="button" className="button button--secondary location-button" aria-pressed={picking}
               onClick={onPickToggle}>
               <MapPin size={16} aria-hidden="true" />
-              {picking ? 'Batalkan pemilihan titik' : 'Pilih titik di peta'}
+              {picking ? 'Cancel location selection' : 'Choose on map'}
             </button>
             <div className="field-grid">
               <div className="form-field">
-                <label htmlFor={fieldID('latitude')}>Lintang</label>
+                <label htmlFor={fieldID('latitude')}>Latitude</label>
                 <input {...fieldProps('latitude')} required inputMode="decimal"
-                  placeholder="−6,911" value={draft.latitude} onChange={(event) => update('latitude', event.target.value)} />
+                  placeholder="−6.911" value={draft.latitude} onChange={(event) => update('latitude', event.target.value)} />
                 {errorMessage('latitude')}
               </div>
               <div className="form-field">
-                <label htmlFor={fieldID('longitude')}>Bujur</label>
+                <label htmlFor={fieldID('longitude')}>Longitude</label>
                 <input {...fieldProps('longitude')} required inputMode="decimal"
-                  placeholder="107,616" value={draft.longitude} onChange={(event) => update('longitude', event.target.value)} />
+                  placeholder="107.616" value={draft.longitude} onChange={(event) => update('longitude', event.target.value)} />
                 {errorMessage('longitude')}
               </div>
             </div>
@@ -142,9 +142,9 @@ export function AssetForm({ draft, editing, saving, picking, onChange, onPickTog
         {saveError && <p className="inline-error" role="alert">{saveError}</p>}
         <div className="form-actions">
           <button className="button button--primary" type="submit" disabled={saving}>
-            {saving ? 'Menyimpan…' : 'Simpan aset'}
+            {saving ? 'Saving…' : 'Save asset'}
           </button>
-          <button className="button button--secondary" type="button" disabled={saving} onClick={onCancel}>Batal</button>
+          <button className="button button--secondary" type="button" disabled={saving} onClick={onCancel}>Cancel</button>
         </div>
       </form>
     </>

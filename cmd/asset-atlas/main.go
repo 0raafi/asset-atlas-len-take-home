@@ -51,7 +51,7 @@ func run(addr, path, web string, seed bool) error {
 	defer stop()
 	serve := make(chan error, 1)
 	go func() {
-		log.Printf("Atlas Aset listening on http://%s", addr)
+		log.Printf("Asset Atlas listening on http://%s", addr)
 		serve <- server.ListenAndServe()
 	}()
 	select {

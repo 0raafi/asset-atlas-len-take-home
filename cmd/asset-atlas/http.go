@@ -99,13 +99,13 @@ func readID(w http.ResponseWriter, r *http.Request) (int64, bool) {
 }
 
 func notFound(w http.ResponseWriter) {
-	writeJSON(w, http.StatusNotFound, apiError{Message: "Aset tidak ditemukan. Muat ulang halaman untuk mengambil data terbaru."})
+	writeJSON(w, http.StatusNotFound, apiError{Message: "Asset not found. Reload the page to refresh the list."})
 }
 
 func readInput(w http.ResponseWriter, r *http.Request) (asset, bool) {
 	mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 	if err != nil || mediaType != "application/json" {
-		writeJSON(w, http.StatusUnsupportedMediaType, apiError{Message: "Gunakan Content-Type application/json."})
+		writeJSON(w, http.StatusUnsupportedMediaType, apiError{Message: "Send the request with Content-Type application/json."})
 		return asset{}, false
 	}
 
@@ -124,28 +124,28 @@ func readInput(w http.ResponseWriter, r *http.Request) (asset, bool) {
 	name := strings.TrimSpace(input.Name)
 	fields := map[string]string{}
 	if count := utf8.RuneCountInString(name); count < 1 || count > 80 {
-		fields["name"] = "Masukkan nama antara 1 dan 80 karakter."
+		fields["name"] = "Enter an asset name between 1 and 80 characters."
 	} else if strings.ContainsFunc(name, unicode.IsControl) {
-		fields["name"] = "Hapus karakter kontrol dari nama aset."
+		fields["name"] = "Remove line breaks or other control characters from the asset name."
 	}
 	switch input.Type {
 	case "device", "vehicle", "facility":
 	default:
-		fields["type"] = "Pilih jenis aset yang tersedia."
+		fields["type"] = "Select an asset type from the list."
 	}
 	switch input.Status {
 	case "active", "maintenance", "inactive":
 	default:
-		fields["status"] = "Pilih status yang tersedia."
+		fields["status"] = "Select a status from the list."
 	}
 	if !validCoordinate(input.Latitude, latitudeLimit) {
-		fields["latitude"] = "Masukkan lintang antara −85,05112878 dan 85,05112878."
+		fields["latitude"] = "Enter a latitude between −85.05112878 and 85.05112878."
 	}
 	if !validCoordinate(input.Longitude, 180) {
-		fields["longitude"] = "Masukkan bujur antara −180 dan 180."
+		fields["longitude"] = "Enter a longitude between −180 and 180."
 	}
 	if len(fields) != 0 {
-		writeJSON(w, http.StatusUnprocessableEntity, apiError{Message: "Periksa isian aset.", Fields: fields})
+		writeJSON(w, http.StatusUnprocessableEntity, apiError{Message: "Check the asset fields and try again.", Fields: fields})
 		return asset{}, false
 	}
 	return asset{Name: name, Type: input.Type, Status: input.Status, Latitude: *input.Latitude, Longitude: *input.Longitude}, true
@@ -158,15 +158,15 @@ func validCoordinate(value *float64, limit float64) bool {
 func badJSON(w http.ResponseWriter, err error) {
 	var maxBytes *http.MaxBytesError
 	if errors.As(err, &maxBytes) {
-		writeJSON(w, http.StatusRequestEntityTooLarge, apiError{Message: "Ukuran data aset melebihi batas."})
+		writeJSON(w, http.StatusRequestEntityTooLarge, apiError{Message: "The request body exceeds the 4 KB limit."})
 		return
 	}
-	writeJSON(w, http.StatusBadRequest, apiError{Message: "Kirim objek JSON dengan tipe data yang sesuai."})
+	writeJSON(w, http.StatusBadRequest, apiError{Message: "Send a valid JSON object with supported fields and data types."})
 }
 
 func databaseError(w http.ResponseWriter, err error) {
 	log.Printf("database: %v", err)
-	writeJSON(w, http.StatusInternalServerError, apiError{Message: "Data aset tidak dapat diproses. Coba lagi."})
+	writeJSON(w, http.StatusInternalServerError, apiError{Message: "Could not process the asset data. Try again."})
 }
 
 func writeJSON(w http.ResponseWriter, status int, payload any) {

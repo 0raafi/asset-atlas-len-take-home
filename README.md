@@ -1,52 +1,52 @@
-# Atlas Aset
+# Asset Atlas
 
-Atlas Aset adalah aplikasi untuk melihat dan mengelola lokasi perangkat IoT, kendaraan, dan fasilitas di peta. Kamu bisa membuka detail dari marker atau daftar aset, menambah aset, memindahkan lokasi, dan menghapus aset dengan konfirmasi.
+Asset Atlas is a map-based inventory for IoT devices, vehicles, and facilities. Open an asset from the map or list to view its details, update its attributes or location, or delete it.
 
-## Menjalankan aplikasi
+## Getting started
 
-Siapkan Go 1.23 atau lebih baru dan Node.js 22.12 atau lebih baru. Jalankan perintah berikut dari root repo.
+Install Go 1.23 or later and Node.js 22.12 or later. From the repository root, run:
 
 ```sh
 npm ci --prefix web
 npm run build --prefix web
-go run ./cmd/atlas-aset -seed
+go run ./cmd/asset-atlas -seed
 ```
 
-Buka [Atlas Aset di localhost](http://127.0.0.1:8080). Opsi `-seed` memasukkan enam aset fiktif di Bandung saat database pertama kali dibuat. Data disimpan di `data/assets.db` dan tetap ada setelah server dimulai ulang. Untuk mulai dengan database kosong, jalankan server dengan `-db data/kosong.db`.
+Open [Asset Atlas](http://127.0.0.1:8080). The `-seed` flag adds six fictional assets in Bandung when the database is first created. Changes are saved to `data/assets.db` and persist across server restarts. To start with an empty inventory, run `go run ./cmd/asset-atlas -db data/empty.db`.
 
-Untuk pengembangan frontend, jalankan backend seperti di atas dan jalankan `npm run dev --prefix web` di terminal lain. Vite meneruskan permintaan `/api` ke backend lokal.
+For frontend development, leave the Go server running and run `npm run dev --prefix web` in another terminal. Vite proxies `/api` requests to the local backend.
 
-Peta dasar memakai tile OpenStreetMap dan membutuhkan internet. Daftar, detail, koordinat, dan operasi aset tetap dapat dipakai jika tile gagal dimuat. `VITE_TILE_URL` dapat dipakai saat build untuk memilih endpoint alternatif dengan atribusi OpenStreetMap yang sama.
+The base map uses OpenStreetMap tiles and requires an internet connection. The asset list, details, coordinates, and editing controls remain available if tiles fail to load. Set `VITE_TILE_URL` at build time to use an alternative endpoint with the same OpenStreetMap attribution.
 
-## Demo singkat
+## Quick demo
 
-1. Klik marker atau baris **Sensor Braga** untuk membuka detail.
-2. Pilih **Tambah aset**, klik titik di peta, isi nama, jenis, dan status, lalu simpan. Koordinat juga bisa diisi langsung dengan pemisah desimal titik atau koma.
-3. Buka **Edit aset**, ubah status, lalu pilih titik lain. Simpan dan muat ulang halaman untuk memeriksa lokasi baru.
-4. Pilih **Hapus aset** dan konfirmasi. Setelah halaman dimuat ulang, aset tetap hilang dari daftar dan peta.
+1. Select **Braga Sensor** in the asset list or select its marker to open the details.
+2. Select **Add asset**, choose a point on the map, and enter a name, type, and status. You can also enter coordinates directly with a decimal point or comma.
+3. Select **Edit asset**, change the status, and choose a new location. Save and reload the page to confirm the new position.
+4. Select **Delete asset** and confirm. Reload the page to verify that the asset is gone from the list and map.
 
-## Struktur dan pilihan teknologi
+## Technology choices
 
-| Komponen | Alasan pemilihan |
+| Component | Rationale |
 | --- | --- |
-| React + TypeScript | Tipe data aset dipakai bersama oleh form, daftar, dan peta. State React lokal cukup untuk alur satu halaman. |
-| React Leaflet + OpenStreetMap | Leaflet menyediakan marker dan event pemilihan titik. React Leaflet menghubungkannya ke state halaman, dan tile OpenStreetMap menyediakan peta dasar dengan atribusi terlihat. |
-| Vite + Lucide | Vite menyediakan server pengembangan dan build statis. Lucide menjaga ikon kontrol peta dan aksi konsisten. |
-| Go `net/http` + `database/sql` | Pustaka standar menangani routing, HTTP, dan akses database pada API kecil ini. Go juga menyajikan build frontend sehingga UI dan API berbagi satu origin. |
-| SQLite + `modernc.org/sqlite` | Satu file database cukup untuk penyimpanan lokal. Driver Go murni memudahkan setup tanpa server database atau toolchain C. |
+| React and TypeScript | Shared asset types keep the form, list, and map consistent. Local React state suits the single-page workflow. |
+| React Leaflet and OpenStreetMap | React Leaflet connects map markers and location selection to React state. OpenStreetMap provides the attributed base map. |
+| Vite and Lucide | Vite provides a development server and a static production build. Lucide supplies the interface icons. |
+| Go `net/http` and `database/sql` | The standard library handles routing and database access. Go also serves the built frontend so the app and API share one origin. |
+| SQLite and `modernc.org/sqlite` | A single database file provides persistent local storage. The pure-Go driver keeps setup independent of a database server or C toolchain. |
 
 ### API
 
-| Metode dan path | Perilaku |
+| Method and path | Behavior |
 | --- | --- |
-| `GET /api/assets` | Mengembalikan daftar aset. Data yang sama tampil di marker dan panel detail. |
-| `POST /api/assets` | Membuat aset dan mengembalikannya dengan ID baru. |
-| `PUT /api/assets/{id}` | Mengganti atribut dan koordinat aset. ID tetap sama. |
-| `DELETE /api/assets/{id}` | Menghapus aset dan mengembalikan `204 No Content`. |
+| `GET /api/assets` | Returns the assets displayed in the list, on the map, and in the details panel. |
+| `POST /api/assets` | Creates an asset and returns it with a new ID. |
+| `PUT /api/assets/{id}` | Updates the asset's attributes and coordinates while keeping its ID. |
+| `DELETE /api/assets/{id}` | Deletes the asset and returns `204 No Content`. |
 
-Body JSON untuk tambah dan edit berisi `name`, `type`, `status`, `latitude`, dan `longitude`. Jenis yang tersedia adalah `device`, `vehicle`, dan `facility`. Status yang tersedia adalah `active`, `maintenance`, dan `inactive`. Frontend memberi pesan di field yang keliru, sementara API memvalidasi ulang dan mengembalikan `422` beserta kesalahan per field. Lintang mengikuti batas Web Mercator ±85,05112878° dan bujur mengikuti rentang ±180°.
+Create and update requests accept a JSON object with `name`, `type`, `status`, `latitude`, and `longitude`. Supported types are `device`, `vehicle`, and `facility`. Supported statuses are `active`, `maintenance`, and `inactive`. The form displays field-specific validation messages, and the API validates each request independently. Invalid field values return `422` with a `fields` object. Latitude uses the Web Mercator range of ±85.05112878° and longitude uses ±180°.
 
-## Verifikasi
+## Verification
 
 ```sh
 go test ./...
@@ -55,17 +55,17 @@ npm run typecheck --prefix web
 npm run build --prefix web
 ```
 
-Tes Go menguji API lewat HTTP handler dengan SQLite sementara. Kasus yang dicakup meliputi persistensi setelah database dibuka kembali, koordinat nol, penolakan input invalid, perubahan lokasi dengan ID yang sama, dan penghapusan berdasarkan ID.
+The Go integration tests exercise the HTTP handlers against a temporary SQLite database. They cover persistence after reopening the database, a zero coordinate, validation failures, location updates that preserve the asset ID, and deletion by ID.
 
-Uji browser Chrome saat pengembangan mencakup CRUD, validasi form, pemilihan titik, perubahan label marker, draft saat API gagal, membuka marker dan membatalkan hapus dengan keyboard, persistensi setelah restart backend, serta tampilan pada lebar 320 px. Uji alur menggunakan tile pengganti lewat Playwright. Kondisi tile gagal dimuat dan tampilan dengan tile OpenStreetMap asli juga diperiksa.
+Browser verification in Chrome covered CRUD, form validation, map clicks, marker labels, retaining form input after a failed save, keyboard access, persistence after restarting the server, and layout at a 320 px viewport. Playwright used substitute tiles for the interaction checks. Live OpenStreetMap tiles and the failed-tile state were also checked.
 
-## Penggunaan Agentic AI
+## Agentic AI workflow
 
-Kandidat menyetujui scope, pilihan stack, urutan tiket, dan cakupan pengujian. Codex membaca instruksi skill dari [repo Matt Pocock](https://github.com/mattpocock/skills) dan menerapkannya saat mengerjakan aplikasi.
+The candidate approved the scope, technology choices, ticket order, and test coverage. Codex consulted the [Matt Pocock skills](https://github.com/mattpocock/skills) and used them to implement and verify the application.
 
-1. `grill-with-docs` dipakai untuk memperjelas istilah dan alur peta. Hasilnya menjadi glosarium dan kriteria yang disetujui.
-2. `to-tickets` memecah pekerjaan menjadi alur tambah dan lihat detail, edit lokasi, serta hapus. Tiket lokal ada di [.scratch/atlas-aset/issues](.scratch/atlas-aset/issues).
-3. `implement` dan `tdd` dipakai untuk menulis kode Go dan React. Codex menjalankan tes API tambah, edit, dan hapus sebelum menambahkan handler terkait, lalu menjalankan ulang tes setelah implementasi.
-4. `code-review` dipakai untuk memeriksa kode dan kesesuaian dengan soal. Review menemukan koordinat kecil yang gagal diedit saat tampil dalam notasi eksponen dan label marker yang tertinggal setelah aset berganti nama. Keduanya diperbaiki.
+1. `grill-with-docs` clarified the domain terms and map interactions. The results are captured in the [glossary](GLOSSARY.md) and acceptance criteria.
+2. `to-tickets` split the work into three end-to-end flows covering creation and details, edits and location changes, and deletion. See the [local tickets](.scratch/asset-atlas/issues).
+3. `implement` and `tdd` guided the Go and React implementation. Codex ran the create, update, and delete API tests before adding their handlers, then reran them after implementation.
+4. `code-review` checked the implementation against the assignment and repository standards. The review found that small coordinates could appear in scientific notation and fail validation on edit, and that renamed markers retained an outdated label. Both issues were corrected and retested.
 
-Panduan kerja agent untuk repo ini ada di [AGENT.md](AGENT.md).
+Repository instructions for coding agents are in [AGENT.md](AGENT.md).

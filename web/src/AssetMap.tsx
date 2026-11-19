@@ -66,17 +66,17 @@ function MapControls() {
   }, [])
 
   return (
-    <div ref={controls} className="map-controls" role="group" aria-label="Kontrol peta">
-      <button type="button" title="Kembali ke Bandung" aria-label="Kembali ke Bandung"
+    <div ref={controls} className="map-controls" role="group" aria-label="Map controls">
+      <button type="button" title="Reset map to Bandung" aria-label="Reset map to Bandung"
         onClick={() => map.setView(home, homeZoom, { animate: false })}>
         <Crosshair {...buttonIcon} />
       </button>
       <div className="zoom-controls">
-        <button type="button" title="Perbesar peta" aria-label="Perbesar peta"
+        <button type="button" title="Zoom in" aria-label="Zoom in"
           disabled={zoom >= map.getMaxZoom()} onClick={() => map.zoomIn()}>
           <Plus {...buttonIcon} />
         </button>
-        <button type="button" title="Perkecil peta" aria-label="Perkecil peta"
+        <button type="button" title="Zoom out" aria-label="Zoom out"
           disabled={zoom <= map.getMinZoom()} onClick={() => map.zoomOut()}>
           <Minus {...buttonIcon} />
         </button>
@@ -97,7 +97,7 @@ export function AssetMap({ assets, selected, draftLocation, picking, onPick, onS
   const currentLoadFailed = useRef(false)
 
   return (
-    <section id="asset-map" className="map-frame" aria-label="Peta lokasi aset">
+    <section id="asset-map" className="map-frame" aria-label="Asset locations">
       <MapContainer
         className={picking ? 'map-surface map-surface--picking' : 'map-surface'}
         center={home}
@@ -132,18 +132,18 @@ export function AssetMap({ assets, selected, draftLocation, picking, onPick, onS
           />
         ))}
         {draftLocation && (
-          <Marker position={draftLocation} icon={draftPin} title="Lokasi draf"
+          <Marker position={draftLocation} icon={draftPin} title="Draft location"
             keyboard={false} interactive={false} zIndexOffset={600} />
         )}
         <MapControls />
       </MapContainer>
       {picking && (
-        <p className="map-hint"><MapPin size={17} aria-hidden="true" /> Pilih titik lokasi aset</p>
+        <p className="map-hint"><MapPin size={17} aria-hidden="true" /> Select an asset location</p>
       )}
       {tileFailed && (
-        <p className="map-warning">Sebagian peta dasar tidak tersedia. Lokasi aset tetap bisa dikelola.</p>
+        <p className="map-warning">Some map tiles could not load. You can still manage asset locations.</p>
       )}
-      <ul className="map-legend" aria-label="Legenda jenis aset">
+      <ul className="map-legend" aria-label="Asset type legend">
         {Object.entries(assetTypes).map(([type, label]) => (
           <li key={type}><span className={`legend-dot legend-dot--${type}`} />{label}</li>
         ))}

@@ -1,13 +1,13 @@
-# Glosarium
+# Glossary
 
-## Aset
+## Asset
 
-Entitas yang dikelola di peta, seperti perangkat IoT, kendaraan, atau fasilitas. Setiap aset punya identitas, nama, jenis, status, dan satu lokasi.
+An item managed on the map, such as an IoT device, a vehicle, or a facility. Each asset has an ID, name, type, status, and location.
 
-## Marker
+## Map marker
 
-Penanda yang menunjukkan lokasi satu aset di peta.
+A visual indicator of one asset's location on the map. Selecting it opens the asset's details.
 
-## Lokasi
+## Location
 
-Posisi aset yang dinyatakan sebagai pasangan lintang dan bujur.
+An asset's position expressed as a latitude and longitude.

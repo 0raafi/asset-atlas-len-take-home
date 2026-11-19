@@ -23,15 +23,17 @@ export function AssetList({ assets, loading, error, onRetry, onAdd, onSelect }: 
   return (
     <>
       <div className="panel-heading">
-        <h2 tabIndex={-1}>Daftar aset</h2>
-        {!loading && !error && <span className="count-label">{assets.length} aset</span>}
+        <h2 tabIndex={-1}>Assets</h2>
+        {!loading && !error && (
+          <span className="count-label">{assets.length} {assets.length === 1 ? 'asset' : 'assets'}</span>
+        )}
       </div>
       <div className="panel-body asset-list-body">
-        {loading && <p className="panel-message" role="status">Memuat aset…</p>}
+        {loading && <p className="panel-message" role="status">Loading assets…</p>}
         {error && (
           <div className="panel-message">
             <p role="alert">{error}</p>
-            <button className="button button--secondary" type="button" onClick={onRetry}>Coba lagi</button>
+            <button className="button button--secondary" type="button" onClick={onRetry}>Try again</button>
           </div>
         )}
         {!loading && !error && (
@@ -54,10 +56,10 @@ export function AssetList({ assets, loading, error, onRetry, onAdd, onSelect }: 
           ) : (
             <div className="empty-state">
               <span className="empty-icon"><MapPin size={23} aria-hidden="true" /></span>
-              <h3>Belum ada aset</h3>
-              <p>Tambahkan aset pertama dan tentukan lokasinya di peta.</p>
+              <h3>No assets yet</h3>
+              <p>Add your first asset and set its location on the map.</p>
               <button className="button button--secondary" type="button" onClick={onAdd}>
-                <Plus size={17} aria-hidden="true" /> Tambah aset
+                <Plus size={17} aria-hidden="true" /> Add asset
               </button>
             </div>
           )
@@ -84,7 +86,7 @@ export function AssetDetail({ asset, onBack, onEdit, onDelete }: {
     try {
       await onDelete()
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Aset gagal dihapus. Coba lagi.')
+      setError(error instanceof Error ? error.message : 'Could not delete the asset. Try again.')
       setDeleting(false)
     }
   }
@@ -93,23 +95,23 @@ export function AssetDetail({ asset, onBack, onEdit, onDelete }: {
     <>
       <div className="panel-heading panel-heading--stack">
         <button type="button" className="text-button" onClick={onBack}>
-          <ChevronLeft size={17} aria-hidden="true" /> Daftar aset
+          <ChevronLeft size={17} aria-hidden="true" /> All assets
         </button>
-        <h2 tabIndex={-1}>Detail aset</h2>
+        <h2 tabIndex={-1}>Asset details</h2>
       </div>
       <div className="panel-body asset-detail">
         <div className="detail-identity">
           <AssetIcon type={asset.type} />
           <div>
-            <span className="detail-id">Aset #{asset.id}</span>
+            <span className="detail-id">Asset #{asset.id}</span>
             <h3>{asset.name}</h3>
           </div>
         </div>
         <dl className="detail-fields">
-          <div><dt>Jenis</dt><dd>{assetTypes[asset.type]}</dd></div>
+          <div><dt>Type</dt><dd>{assetTypes[asset.type]}</dd></div>
           <div><dt>Status</dt><dd><Status status={asset.status} /></dd></div>
           <div>
-            <dt>Lokasi</dt>
+            <dt>Location</dt>
             <dd className="detail-location">
               <MapPin size={16} aria-hidden="true" />
               <span>{formatCoordinate(asset.latitude)}° / {formatCoordinate(asset.longitude)}°</span>
@@ -118,27 +120,27 @@ export function AssetDetail({ asset, onBack, onEdit, onDelete }: {
         </dl>
         <div className="detail-actions">
           <button className="button button--primary" type="button" onClick={onEdit}>
-            <Pencil size={16} aria-hidden="true" /> Edit aset
+            <Pencil size={16} aria-hidden="true" /> Edit asset
           </button>
           <button className="button button--danger-outline" type="button" onClick={() => {
             setError('')
             dialog.current?.showModal()
           }}>
-            <Trash2 size={16} aria-hidden="true" /> Hapus aset
+            <Trash2 size={16} aria-hidden="true" /> Delete asset
           </button>
         </div>
       </div>
       <dialog ref={dialog} className="delete-dialog" aria-labelledby="delete-title" aria-describedby="delete-description"
         onCancel={(event) => { if (deleting) event.preventDefault() }}>
         <span className="delete-icon"><Trash2 size={22} aria-hidden="true" /></span>
-        <h2 id="delete-title">Hapus aset?</h2>
-        <p id="delete-description"><strong>{asset.name}</strong> akan dihapus dari daftar dan peta.</p>
+        <h2 id="delete-title">Delete asset?</h2>
+        <p id="delete-description"><strong>{asset.name}</strong> will be removed from the list and map.</p>
         {error && <p className="inline-error" role="alert">{error}</p>}
         <div className="dialog-actions">
           <button className="button button--secondary" type="button"
-            disabled={deleting} onClick={() => dialog.current?.close()}>Batal</button>
+            disabled={deleting} onClick={() => dialog.current?.close()}>Cancel</button>
           <button className="button button--danger" type="button" disabled={deleting} onClick={confirmDelete}>
-            {deleting ? 'Menghapus…' : 'Hapus aset'}
+            {deleting ? 'Deleting…' : 'Delete asset'}
           </button>
         </div>
       </dialog>
@@ -150,7 +152,7 @@ export function PanelFooter() {
   return (
     <div className="panel-footer">
       <MapPin size={14} aria-hidden="true" />
-      <span>Pilih marker atau aset untuk melihat detail.</span>
+      <span>Select a marker or an asset to view its details.</span>
     </div>
   )
 }

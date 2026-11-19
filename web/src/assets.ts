@@ -1,13 +1,13 @@
 export const assetTypes = {
-  device: 'Perangkat IoT',
-  vehicle: 'Kendaraan',
-  facility: 'Fasilitas',
+  device: 'IoT device',
+  vehicle: 'Vehicle',
+  facility: 'Facility',
 }
 
 export const assetStatuses = {
-  active: 'Aktif',
-  maintenance: 'Perawatan',
-  inactive: 'Nonaktif',
+  active: 'Active',
+  maintenance: 'Maintenance',
+  inactive: 'Inactive',
 }
 
 export type AssetType = keyof typeof assetTypes
@@ -46,7 +46,7 @@ export function readCoordinate(value: string, limit: number): number | undefined
 }
 
 export function formatCoordinate(value: number) {
-  return value.toLocaleString('id-ID', { maximumSignificantDigits: 16, useGrouping: false })
+  return value.toLocaleString('en-US', { maximumSignificantDigits: 16, useGrouping: false })
 }
 
 export class ApiError extends Error {
@@ -61,13 +61,13 @@ async function request(path: string, options?: RequestInit) {
     response = await fetch(`/api/assets${path}`, options)
   } catch (error) {
     if (options?.signal?.aborted) throw error
-    throw new ApiError('API tidak dapat dihubungi. Periksa koneksi lalu coba lagi.')
+    throw new ApiError('Could not connect to the server. Check your connection and try again.')
   }
 
   if (!response.ok) {
     const payload: { message?: string; fields?: FieldErrors } | null =
       await response.json().catch(() => null)
-    throw new ApiError(payload?.message ?? 'Permintaan gagal. Coba lagi.', payload?.fields)
+    throw new ApiError(payload?.message ?? 'The request failed. Try again.', payload?.fields)
   }
   return response
 }

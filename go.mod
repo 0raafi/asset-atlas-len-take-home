@@ -1,4 +1,4 @@
-module atlas-aset
+module asset-atlas
 
 go 1.23.0
 

@@ -1,3 +1,3 @@
-# Instruksi Codex
+# Codex instructions
 
-Baca [AGENT.md](AGENT.md) untuk scope, cara kerja, dan verifikasi proyek.
+See [AGENT.md](AGENT.md) for the project scope, development workflow, and verification steps.

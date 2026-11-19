@@ -47,12 +47,12 @@ func TestCreateAndListAfterDatabaseReopens(t *testing.T) {
 
 	original := open()
 	handler := newHandler(original)
-	body := `{"name":" Sensor Uji ","type":"device","status":"active","latitude":0,"longitude":107.6}`
+	body := `{"name":" Test Sensor ","type":"device","status":"active","latitude":0,"longitude":107.6}`
 	created := value[asset](t, request(t, handler, "POST", "/api/assets", body, http.StatusCreated))
 	if err := original.Close(); err != nil {
 		t.Fatal(err)
 	}
-	if created.ID == 0 || created.Name != "Sensor Uji" || created.Latitude != 0 || created.Longitude != 107.6 {
+	if created.ID == 0 || created.Name != "Test Sensor" || created.Latitude != 0 || created.Longitude != 107.6 {
 		t.Fatalf("unexpected created asset: %+v", created)
 	}
 
@@ -97,15 +97,15 @@ func TestUpdateMovesAssetAndPreservesIdentity(t *testing.T) {
 	created := value[asset](t, request(t, handler, "POST", "/api/assets", initial, http.StatusCreated))
 
 	path := fmt.Sprintf("/api/assets/%d", created.ID)
-	invalid := `{"name":"Sensor Baru","type":"facility","status":"maintenance","latitude":90,"longitude":107.65}`
+	invalid := `{"name":"Updated Sensor","type":"facility","status":"maintenance","latitude":90,"longitude":107.65}`
 	request(t, handler, "PUT", path, invalid, http.StatusUnprocessableEntity)
 	list := value[[]asset](t, request(t, handler, "GET", "/api/assets", "", http.StatusOK))
 	if len(list) != 1 || list[0] != created {
 		t.Fatalf("rejected update changed the asset: %+v", list)
 	}
 
-	updated := `{"name":"Sensor Baru","type":"facility","status":"maintenance","latitude":-6.94,"longitude":107.65}`
-	want := asset{ID: created.ID, Name: "Sensor Baru", Type: "facility", Status: "maintenance", Latitude: -6.94, Longitude: 107.65}
+	updated := `{"name":"Updated Sensor","type":"facility","status":"maintenance","latitude":-6.94,"longitude":107.65}`
+	want := asset{ID: created.ID, Name: "Updated Sensor", Type: "facility", Status: "maintenance", Latitude: -6.94, Longitude: 107.65}
 	if got := value[asset](t, request(t, handler, "PUT", path, updated, http.StatusOK)); got != want {
 		t.Fatalf("got %+v, want %+v", got, want)
 	}

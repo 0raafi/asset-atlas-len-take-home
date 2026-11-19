@@ -31,7 +31,7 @@ export function App() {
       setLoad({ pending: false, error: '' })
     }).catch((error: unknown) => {
       if (controller.signal.aborted) return
-      setLoad({ pending: false, error: error instanceof Error ? error.message : 'Aset gagal dimuat.' })
+      setLoad({ pending: false, error: error instanceof Error ? error.message : 'Could not load assets.' })
     })
     return () => controller.abort()
   }, [loadAttempt])
@@ -86,7 +86,7 @@ export function App() {
         : current.map((asset) => asset.id === id ? saved : asset))
       setPicking(false)
       navigate({ kind: 'detail', id: saved.id })
-      setNotice(id === undefined ? 'Aset berhasil ditambahkan.' : 'Perubahan aset disimpan.')
+      setNotice(id === undefined ? 'Asset added.' : 'Changes saved.')
     } finally {
       setSaving(false)
     }
@@ -96,29 +96,29 @@ export function App() {
     await deleteAsset(asset.id)
     setAssets((current) => current.filter((entry) => entry.id !== asset.id))
     navigate({ kind: 'list' })
-    setNotice('Aset berhasil dihapus.')
+    setNotice('Asset deleted.')
   }
 
   return (
     <>
       <header className="topbar">
         <div className="topbar-inner">
-          <div className="brand"><span className="brand-icon"><LocateFixed size={20} aria-hidden="true" /></span>Atlas Aset</div>
+          <div className="brand"><span className="brand-icon"><LocateFixed size={20} aria-hidden="true" /></span>Asset Atlas</div>
           <button className="button button--primary add-button" type="button"
             disabled={load.pending || Boolean(load.error) || view.kind === 'editor'} onClick={() => openEditor()}>
-            <Plus size={19} aria-hidden="true" /> Tambah aset
+            <Plus size={19} aria-hidden="true" /> Add asset
           </button>
         </div>
       </header>
       <main className="workspace">
         <div className="workspace-heading">
-          <h1>Peta aset</h1>
+          <h1>Asset map</h1>
           <div className="notice-region" role="status">
             {notice && <span className="notice"><Check size={16} aria-hidden="true" /> {notice}</span>}
           </div>
         </div>
         <div className="workspace-grid">
-          <aside className="asset-panel" aria-label="Pengelolaan aset" ref={panel}>
+          <aside className="asset-panel" aria-label="Asset management" ref={panel}>
             {view.kind === 'list' && (
               <>
                 <AssetList assets={assets} loading={load.pending} error={load.error}

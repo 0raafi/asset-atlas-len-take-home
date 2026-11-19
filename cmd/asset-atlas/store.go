@@ -70,12 +70,12 @@ func (db *store) initialize(ctx context.Context, seed bool) error {
 	if seed {
 		_, err = tx.ExecContext(ctx, `
 			INSERT INTO assets (name, type, status, latitude, longitude) VALUES
-				('Sensor Braga', 'device', 'active', -6.9172, 107.6099),
-				('Unit Operasional 02', 'vehicle', 'active', -6.9098, 107.6368),
-				('Stasiun Cikapundung', 'facility', 'maintenance', -6.8906, 107.5989),
-				('Gateway Dago', 'device', 'active', -6.8818, 107.6151),
-				('Unit Operasional 04', 'vehicle', 'inactive', -6.9299, 107.6266),
-				('Pos Pemantauan Timur', 'facility', 'active', -6.9137, 107.6510)
+				('Braga Sensor', 'device', 'active', -6.9172, 107.6099),
+				('Operations Unit 02', 'vehicle', 'active', -6.9098, 107.6368),
+				('Cikapundung Station', 'facility', 'maintenance', -6.8906, 107.5989),
+				('Dago Gateway', 'device', 'active', -6.8818, 107.6151),
+				('Operations Unit 04', 'vehicle', 'inactive', -6.9299, 107.6266),
+				('East Monitoring Station', 'facility', 'active', -6.9137, 107.6510)
 		`)
 		if err != nil {
 			return err
