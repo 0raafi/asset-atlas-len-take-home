@@ -10,9 +10,18 @@ export const assetStatuses = {
   inactive: 'Inactive',
 }
 
+export const locationFields = [
+  ['district', 'District'],
+  ['city', 'City / Regency'],
+  ['province', 'Province'],
+] as const
+
+export type LocationDetails = Record<(typeof locationFields)[number][0], string>
+export const emptyLocationDetails: LocationDetails = { district: '', city: '', province: '' }
+
 export type AssetType = keyof typeof assetTypes
 export type AssetStatus = keyof typeof assetStatuses
-export type AssetInput = {
+export type AssetInput = LocationDetails & {
   name: string
   type: AssetType
   status: AssetStatus
@@ -35,6 +44,9 @@ export function makeDraft(asset?: Asset): Draft {
     status: asset?.status ?? 'active',
     latitude: asset ? String(asset.latitude) : '',
     longitude: asset ? String(asset.longitude) : '',
+    district: asset?.district ?? '',
+    city: asset?.city ?? '',
+    province: asset?.province ?? '',
   }
 }
 

@@ -23,6 +23,9 @@ type assetInput struct {
 	Status    string   `json:"status"`
 	Latitude  *float64 `json:"latitude"`
 	Longitude *float64 `json:"longitude"`
+	District  *string  `json:"district"`
+	City      *string  `json:"city"`
+	Province  *string  `json:"province"`
 }
 
 type apiError struct {
@@ -102,11 +105,11 @@ func notFound(w http.ResponseWriter) {
 	writeJSON(w, http.StatusNotFound, apiError{Message: "Asset not found. Reload the page to refresh the list."})
 }
 
-func readInput(w http.ResponseWriter, r *http.Request) (asset, bool) {
+func readInput(w http.ResponseWriter, r *http.Request) (assetInput, bool) {
 	mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 	if err != nil || mediaType != "application/json" {
 		writeJSON(w, http.StatusUnsupportedMediaType, apiError{Message: "Send the request with Content-Type application/json."})
-		return asset{}, false
+		return assetInput{}, false
 	}
 
 	decoder := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096))
@@ -114,18 +117,18 @@ func readInput(w http.ResponseWriter, r *http.Request) (asset, bool) {
 	var input *assetInput
 	if err := decoder.Decode(&input); err != nil {
 		badJSON(w, err)
-		return asset{}, false
+		return assetInput{}, false
 	}
 	if err := decoder.Decode(new(any)); err != io.EOF || input == nil {
 		badJSON(w, err)
-		return asset{}, false
+		return assetInput{}, false
 	}
 
-	name := strings.TrimSpace(input.Name)
+	input.Name = strings.TrimSpace(input.Name)
 	fields := map[string]string{}
-	if count := utf8.RuneCountInString(name); count < 1 || count > 80 {
+	if count := utf8.RuneCountInString(input.Name); count < 1 || count > 80 {
 		fields["name"] = "Enter an asset name between 1 and 80 characters."
-	} else if strings.ContainsFunc(name, unicode.IsControl) {
+	} else if strings.ContainsFunc(input.Name, unicode.IsControl) {
 		fields["name"] = "Remove line breaks or other control characters from the asset name."
 	}
 	switch input.Type {
@@ -144,11 +147,22 @@ func readInput(w http.ResponseWriter, r *http.Request) (asset, bool) {
 	if !validCoordinate(input.Longitude, 180) {
 		fields["longitude"] = "Enter a longitude between −180 and 180."
 	}
+	for key, location := range map[string]*string{"district": input.District, "city": input.City, "province": input.Province} {
+		if location == nil {
+			continue
+		}
+		*location = strings.TrimSpace(*location)
+		if utf8.RuneCountInString(*location) > 80 {
+			fields[key] = "Use 80 characters or fewer."
+		} else if strings.ContainsFunc(*location, unicode.IsControl) {
+			fields[key] = "Remove line breaks or other control characters."
+		}
+	}
 	if len(fields) != 0 {
 		writeJSON(w, http.StatusUnprocessableEntity, apiError{Message: "Check the asset fields and try again.", Fields: fields})
-		return asset{}, false
+		return assetInput{}, false
 	}
-	return asset{Name: name, Type: input.Type, Status: input.Status, Latitude: *input.Latitude, Longitude: *input.Longitude}, true
+	return *input, true
 }
 
 func validCoordinate(value *float64, limit float64) bool {

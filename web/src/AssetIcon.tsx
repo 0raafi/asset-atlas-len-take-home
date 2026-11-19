@@ -1,13 +1,13 @@
-import { Building2, Radio, Truck } from 'lucide-react'
+import { Building03Icon, TruckIcon, Wifi01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import type { AssetType } from './assets'
 
-const icons = { device: Radio, vehicle: Truck, facility: Building2 }
+const icons = { device: Wifi01Icon, vehicle: TruckIcon, facility: Building03Icon }
 
 export function AssetIcon({ type }: { type: AssetType }) {
-  const Icon = icons[type]
   return (
     <span className={`asset-icon asset-icon--${type}`} aria-hidden="true">
-      <Icon size={19} strokeWidth={1.8} />
+      <HugeiconsIcon icon={icons[type]} size={18} strokeWidth={1.7} />
     </span>
   )
 }

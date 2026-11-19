@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -133,5 +134,76 @@ func TestDeleteRemovesOnlyTheRequestedAsset(t *testing.T) {
 	list := value[[]asset](t, request(t, handler, "GET", "/api/assets", "", http.StatusOK))
 	if len(list) != 1 || list[0] != second {
 		t.Fatalf("want only the other asset %+v, got %+v", second, list)
+	}
+}
+
+func TestLocationDetailsAPI(t *testing.T) {
+	handler := newTestHandler(t)
+	initial := `{"name":"Sensor","type":"device","status":"active","latitude":-6.9,"longitude":107.6,"district":" Coblong ","city":"Bandung","province":"West Java"}`
+	created := value[map[string]any](t, request(t, handler, "POST", "/api/assets", initial, http.StatusCreated))
+	if created["district"] != "Coblong" || created["city"] != "Bandung" || created["province"] != "West Java" {
+		t.Fatalf("unexpected location details: %v", created)
+	}
+	path := fmt.Sprintf("/api/assets/%.0f", created["id"])
+
+	clearDistrict := `{"name":"Sensor","type":"device","status":"maintenance","latitude":-6.9,"longitude":107.6,"district":""}`
+	updated := value[map[string]any](t, request(t, handler, "PUT", path, clearDistrict, http.StatusOK))
+	if updated["district"] != "" || updated["city"] != "Bandung" || updated["province"] != "West Java" {
+		t.Fatalf("unexpected location details after clearing district: %v", updated)
+	}
+	list := value[[]map[string]any](t, request(t, handler, "GET", "/api/assets", "", http.StatusOK))
+	if len(list) != 1 || list[0]["city"] != "Bandung" || list[0]["province"] != "West Java" {
+		t.Fatalf("unexpected persisted location details: %v", list)
+	}
+
+	move := `{"name":"Sensor","type":"device","status":"maintenance","latitude":-7,"longitude":107.6}`
+	moved := value[map[string]any](t, request(t, handler, "PUT", path, move, http.StatusOK))
+	if moved["district"] != "" || moved["city"] != "" || moved["province"] != "" {
+		t.Fatalf("old location details carried to a different point: %v", moved)
+	}
+
+	invalid := `{"name":"Sensor","type":"device","status":"active","latitude":0,"longitude":0,"city":"A\nB"}`
+	res := request(t, handler, "POST", "/api/assets", invalid, http.StatusUnprocessableEntity)
+	if value[apiError](t, res).Fields["city"] == "" {
+		t.Fatal("expected a field error for city")
+	}
+}
+
+func TestVersionOneDatabaseKeepsExistingAssets(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "legacy.db")
+	legacy, err := sql.Open("sqlite", path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = legacy.Exec(`
+		CREATE TABLE assets (
+			id INTEGER PRIMARY KEY, name TEXT NOT NULL, type TEXT NOT NULL,
+			status TEXT NOT NULL, latitude REAL NOT NULL, longitude REAL NOT NULL
+		);
+		INSERT INTO assets VALUES (7, 'Existing Sensor', 'device', 'inactive', -6.9, 107.6);
+		PRAGMA user_version = 1;
+	`)
+	closeErr := legacy.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if closeErr != nil {
+		t.Fatal(closeErr)
+	}
+
+	for range 2 {
+		db, err := openStore(context.Background(), path, false)
+		if err != nil {
+			t.Fatal(err)
+		}
+		list := value[[]map[string]any](t, request(t, newHandler(db), "GET", "/api/assets", "", http.StatusOK))
+		if err := db.Close(); err != nil {
+			t.Fatal(err)
+		}
+		if len(list) != 1 || list[0]["id"] != float64(7) || list[0]["name"] != "Existing Sensor" ||
+			list[0]["status"] != "inactive" || list[0]["latitude"] != -6.9 || list[0]["longitude"] != 107.6 ||
+			list[0]["district"] != "" || list[0]["city"] != "" || list[0]["province"] != "" {
+			t.Fatalf("unexpected assets after migrating: %v", list)
+		}
 	}
 }
