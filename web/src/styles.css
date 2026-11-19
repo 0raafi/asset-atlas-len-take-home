@@ -451,5 +451,6 @@ h1 {
   .add-button { padding-inline: 0.625rem; }
   .asset-row { gap: 0.45rem; padding-inline: 0.375rem; }
   .asset-row-copy strong { font-size: 0.8125rem; }
+  .asset-form fieldset > .field-grid { grid-template-columns: minmax(0, 1fr); }
   .map-legend { max-width: calc(100% - 1.75rem); }
 }
