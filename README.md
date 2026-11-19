@@ -57,7 +57,7 @@ npm run build --prefix web
 
 Tes Go menguji API lewat HTTP handler dengan SQLite sementara. Kasus yang dicakup meliputi persistensi setelah database dibuka kembali, koordinat nol, penolakan input invalid, perubahan lokasi dengan ID yang sama, dan penghapusan berdasarkan ID.
 
-Uji browser Chrome mencakup CRUD, validasi form, pemilihan titik, perubahan label marker, draft saat API gagal, pembatalan hapus dengan keyboard, persistensi setelah restart backend, serta tampilan pada lebar 320 px. Uji otomatis memakai tile pengganti agar hasilnya tidak bergantung pada jaringan. Kondisi tile gagal dimuat juga diuji secara terpisah.
+Uji browser Chrome saat pengembangan mencakup CRUD, validasi form, pemilihan titik, perubahan label marker, draft saat API gagal, membuka marker dan membatalkan hapus dengan keyboard, persistensi setelah restart backend, serta tampilan pada lebar 320 px. Uji alur menggunakan tile pengganti lewat Playwright. Kondisi tile gagal dimuat dan tampilan dengan tile OpenStreetMap asli juga diperiksa.
 
 ## Penggunaan Agentic AI
 

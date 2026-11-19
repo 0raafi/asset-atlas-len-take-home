@@ -121,7 +121,14 @@ export function AssetMap({ assets, selected, draftLocation, picking, onPick, onS
             position={[asset.latitude, asset.longitude]}
             icon={pins[asset.type][Number(asset.id === selected?.id)]}
             zIndexOffset={asset.id === selected?.id ? 300 : 0}
-            eventHandlers={{ click: () => onSelect(asset) }}
+            eventHandlers={{
+              click: () => onSelect(asset),
+              keydown: ({ originalEvent }) => {
+                if (originalEvent.key !== 'Enter' && originalEvent.key !== ' ') return
+                originalEvent.preventDefault()
+                if (!originalEvent.repeat) onSelect(asset)
+              },
+            }}
           />
         ))}
         {draftLocation && (
